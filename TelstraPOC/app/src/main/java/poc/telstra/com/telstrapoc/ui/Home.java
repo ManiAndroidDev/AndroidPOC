@@ -3,21 +3,15 @@ package poc.telstra.com.telstrapoc.ui;
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
-import java.util.ArrayList;
 
 import poc.telstra.com.telstrapoc.R;
 import poc.telstra.com.telstrapoc.adapter.FacilityAdapter;
 import poc.telstra.com.telstrapoc.model.Country;
 import poc.telstra.com.telstrapoc.model.CountryAPI;
-import poc.telstra.com.telstrapoc.model.Facility;
 import poc.telstra.com.telstrapoc.util.Constant;
 import retrofit.Call;
 import retrofit.Callback;
@@ -30,10 +24,10 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 public class Home extends Activity implements Callback<Country> ,OnRefreshListener{
 
-    FacilityAdapter arrayAdapter;
-    PullToRefreshLayout mPullToRefreshLayout;
-    ProgressBar progressBar;
-    ListView listView;
+    private FacilityAdapter mFacilityAdapter;
+    private PullToRefreshLayout mPullToRefreshLayout;
+    private ProgressBar mProgressBar;
+    private ListView mCountryDetailList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +42,11 @@ public class Home extends Activity implements Callback<Country> ,OnRefreshListen
         requestData();
     }
 
+    /**
+     * Method to initialize the class variables
+     */
     private void initialize() {
-        mPullToRefreshLayout= (PullToRefreshLayout)findViewById(R.id.tab_1);
+        mPullToRefreshLayout= (PullToRefreshLayout)findViewById(R.id.pull_to_refresh_layout);
         ActionBarPullToRefresh.from(this)
                 // Mark All Children as pullable
                 .allChildrenArePullable()
@@ -58,11 +55,14 @@ public class Home extends Activity implements Callback<Country> ,OnRefreshListen
                         // Finally commit the setup to our PullToRefreshLayout
                 .setup(mPullToRefreshLayout);
 
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        listView = (ListView) findViewById(R.id.country_detail);
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        mCountryDetailList = (ListView) findViewById(R.id.country_detail);
 
     }
 
+    /**
+     * Method to consume the webservice using RetroFit
+     */
     private void requestData() {
 
         toggleLoading(true);
@@ -74,13 +74,20 @@ public class Home extends Activity implements Callback<Country> ,OnRefreshListen
                 .build();
 
         // prepare call in Retrofit 2.0
-        CountryAPI stackOverflowAPI = retrofit.create(CountryAPI.class);
-        Call<Country> call = stackOverflowAPI.loadCountryDetail();
+        CountryAPI countryAPI = retrofit.create(CountryAPI.class);
+        Call<Country> call = countryAPI.loadCountryDetail();
         //asynchronous call
         call.enqueue(this);
     }
 
 
+    /**
+     *
+     * Callback method upon success over network operations
+     *
+     * @param response
+     * @param retrofit
+     */
     @Override
     public void onResponse(Response<Country> response, Retrofit retrofit) {
         mPullToRefreshLayout.setRefreshComplete();
@@ -91,21 +98,31 @@ public class Home extends Activity implements Callback<Country> ,OnRefreshListen
                 getActionBar().setTitle(response.body().getTitle());
             }
             if(response.body().getRows()!=null && response.body().getRows().size()>0) {
-                arrayAdapter = new FacilityAdapter(Home.this, response.body().getRows());
-                listView.setAdapter(arrayAdapter);
+                mFacilityAdapter = new FacilityAdapter(Home.this, response.body().getRows());
+                mCountryDetailList.setAdapter(mFacilityAdapter);
             } else {
                 //No data available
+                showErrorMessage();
             }
         } else {
             //No data from server
+            showErrorMessage();
         }
     }
 
+    private void showErrorMessage() {
+        Toast.makeText(getApplicationContext(),"Error Occurred",Toast.LENGTH_SHORT).show();
+    }
+    /**
+     * Callback method upon failure over network operation
+     * @param throwable
+     */
     @Override
-    public void onFailure(Throwable t) {
+    public void onFailure(Throwable throwable) {
         toggleLoading(false);
         mPullToRefreshLayout.setRefreshComplete();
         //Error Occurred
+        showErrorMessage();
     }
 
     @Override
@@ -113,13 +130,17 @@ public class Home extends Activity implements Callback<Country> ,OnRefreshListen
         requestData();
     }
 
+    /**
+     * Method to toggle the UI according to network operations
+     * @param isLoading
+     */
     public void toggleLoading(boolean isLoading) {
         if(isLoading) {
-        progressBar.setVisibility(View.VISIBLE);
-        listView.setVisibility(View.INVISIBLE);
+            mProgressBar.setVisibility(View.VISIBLE);
+            mCountryDetailList.setVisibility(View.INVISIBLE);
     } else {
-            progressBar.setVisibility(View.INVISIBLE);
-            listView.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.INVISIBLE);
+            mCountryDetailList.setVisibility(View.VISIBLE);
         }
     }
 }

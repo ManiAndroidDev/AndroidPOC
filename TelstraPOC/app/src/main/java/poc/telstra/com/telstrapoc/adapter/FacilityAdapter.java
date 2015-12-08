@@ -15,7 +15,6 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.imageaware.ImageAware;
 import com.nostra13.universalimageloader.core.imageaware.ImageViewAware;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import poc.telstra.com.telstrapoc.R;
@@ -29,14 +28,14 @@ public class FacilityAdapter extends BaseAdapter {
 
     private Context mContext;
     private List<Facility> mfaFacilities;
-    public ImageLoader imageLoader;
+    private ImageLoader mImageLoader;
 
 
     public FacilityAdapter(Context context,List<Facility> facilities) {
         mContext = context;
         mfaFacilities = facilities;
 
-        imageLoader = ImageLoader.getInstance();
+        mImageLoader = ImageLoader.getInstance();
         DisplayImageOptions imgOptions = new DisplayImageOptions.Builder()
                 .cacheInMemory(true)
                 .showImageOnLoading(android.R.color.transparent)
@@ -44,7 +43,7 @@ public class FacilityAdapter extends BaseAdapter {
         ImageLoaderConfiguration imgConfig = new ImageLoaderConfiguration.Builder(mContext)
                 .defaultDisplayImageOptions(imgOptions)
                 .build();
-        imageLoader.init(imgConfig);
+        mImageLoader.init(imgConfig);
     }
 
 
@@ -86,19 +85,18 @@ public class FacilityAdapter extends BaseAdapter {
                 viewHolder = (ViewHolderItem) convertView.getTag();
             }
 
-            // object item based on the position
-            Facility objectItem = getItem(position);
+            //Faciltiy item based on the position
+            Facility facility = getItem(position);
 
             // assign values if the object is not null
-            if(objectItem != null) {
+            if(facility != null) {
                 // get the TextView from the ViewHolder and then set the text (item name) and tag (item ID) values
-                viewHolder.title.setText(objectItem.getTitle());
-                viewHolder.description.setText(objectItem.getDescription());
+                viewHolder.title.setText(facility.getTitle());
+                viewHolder.description.setText(facility.getDescription());
 
-                viewHolder.imageView.setTag(objectItem.getImageHref());
-                ImageAware imageAware = new ImageViewAware(viewHolder.imageView, false);
+                viewHolder.imageView.setTag(facility.getImageHref());
 
-                imageLoader.displayImage(objectItem.getImageHref(), viewHolder.imageView);
+                mImageLoader.displayImage(facility.getImageHref(), viewHolder.imageView);
             }
 
 
