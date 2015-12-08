@@ -15,7 +15,7 @@ public class Facility {
     private String mDescription;
     @SerializedName("imageHref")
     @Expose
-    private Object mImageHref;
+    private String mImageHref;
 
     /**
      *
@@ -58,7 +58,7 @@ public class Facility {
      * @return
      * The imageHref
      */
-    public Object getImageHref() {
+    public String getImageHref() {
         return mImageHref;
     }
 
@@ -67,7 +67,7 @@ public class Facility {
      * @param imageHref
      * The imageHref
      */
-    public void setImageHref(Object imageHref) {
+    public void setImageHref(String imageHref) {
         this.mImageHref = imageHref;
     }
 
